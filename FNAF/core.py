@@ -29,9 +29,9 @@ class Game():
 
     def update(self, event):
         if self.status == START_MENU:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    self.status = OFFICE
+             if event.type == pygame.MOUSEBUTTONDOWN:
+                 if self.backstage.start.infocus(event.pos):
+                     self.status = OFFICE
         elif self.status == OFFICE:
             if self.office.focus == OFFICE:
                 if event.type == pygame.KEYDOWN:
@@ -85,10 +85,12 @@ class Game():
 class Backstage():
     def __init__(self):
         self.original_image = pygame.image.load("../src/images/menu_backstage.png")
-        # self.hidden = False
+        self.start = Button("start", (59, 299), "image1.png")
     def draw(self):
         self.image = pygame.transform.scale(self.original_image, (screen_width, screen_height))
         screen.blit(self.image, (0, 0))
+        self.start.draw()
+
 
 
 class Monitor():
