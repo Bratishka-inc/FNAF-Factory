@@ -26,6 +26,7 @@ class Game():
         self.office = Office()
         self.energy_bar = Energy_bar()
         self.status =  START_MENU
+        pygame.mixer.music.set_volume(0.5)
 
     def update(self, event):
         if self.status == START_MENU:
@@ -37,7 +38,7 @@ class Game():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.status = START_MENU
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN:  
                     if 224 < event.pos[0] < 413 and 167 < event.pos[1] < 312:
                         self.office.focus = MONITOR
                         print("focus",self.office.focus)
@@ -85,11 +86,14 @@ class Game():
 class Backstage():
     def __init__(self):
         self.original_image = pygame.image.load("../src/images/menu_backstage.png")
-        self.start = Button("start", (59, 299), "image1.png")
+        self.start = Button("start", (57, 299), "btn_play.png")
+        self.sound = pygame.mixer.Sound("../src/music/background.wav")
+
     def draw(self):
         self.image = pygame.transform.scale(self.original_image, (screen_width, screen_height))
         screen.blit(self.image, (0, 0))
         self.start.draw()
+        self.sound.play(-1)
 
 
 
@@ -107,6 +111,8 @@ class Monitor():
         self.vent_east = Vent_east()
         self.map = Map()
         self.exit_button = Button("exit_button", (48, 530), "monitor_down.png")
+        self.sound = pygame.mixer.Sound("../src/music/sound_camera.wav")
+
     def draw(self):
         if self.camera == FACTORY:
             self.factory.draw()
@@ -128,6 +134,8 @@ class Monitor():
             self.vent_east.draw()
         self.map.draw()
         self.exit_button.draw()
+        #pygame.mixer.stop()
+        self.sound.play(-1)
 
 class Energy_bar():
     def __init__(self):
@@ -205,12 +213,17 @@ class Office():
         self.energy = 100
         self.monitor = Monitor()
         self.focus = OFFICE
+        self.sound = pygame.mixer.Sound("../src/music/sound_office.wav")
+
     def draw(self):
         if self.focus == OFFICE:
             self.image = pygame.transform.scale(self.image, (screen_width, screen_height))
             screen.blit(self.image, (0, 0))
+            pygame.mixer.stop()
+            self.sound.play(-1)
         elif self.focus == MONITOR:
             self.monitor.draw()
+
 
 class Map():
     def __init__(self):
