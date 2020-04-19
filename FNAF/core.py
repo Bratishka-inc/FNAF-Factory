@@ -1,5 +1,8 @@
 import pygame
 import time
+from itertools import cycle
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 START_MENU = 0
 OFFICE = 1
@@ -26,6 +29,7 @@ class Game():
         self.office = Office()
         self.energy_bar = Energy_bar()
         self.status =  START_MENU
+        self.spring_bonnie = SpringBonnie(self.office)
         pygame.mixer.music.set_volume(0.5)
 
     def update(self, event):
@@ -114,28 +118,30 @@ class Monitor():
         self.sound = pygame.mixer.Sound("../src/music/sound_camera.wav")
 
     def draw(self):
-        if self.camera == FACTORY:
-            self.factory.draw()
-        elif self.camera == HALL:
-            self.hall.draw()
-        elif self.camera == HALL_EAST:
-            self.hall_east.draw()
-        elif self.camera == WORKSHOP:
-            self.workshop.draw()
-        elif self.camera == STORAGE:
-            self.storage.draw()
-        elif self.camera == HALL_1:
-            self.hall_1.draw()
-        elif self.camera == VENT_ROOM:
-            self.vent_room.draw()
-        elif self.camera == VENT_CENTER:
-            self.vent_center.draw()
-        elif self.camera == VENT_EAST:
-            self.vent_east.draw()
+        self.getcam(self.camera).draw()
         self.map.draw()
         self.exit_button.draw()
-        #pygame.mixer.stop()
         self.sound.play(-1)
+
+    def getcam(self, camera):
+        if camera == FACTORY:
+            return self.factory
+        elif camera == HALL:
+            return self.hall
+        elif camera == HALL_EAST:
+            return  self.hall_east
+        elif camera == WORKSHOP:
+            return  self.workshop
+        elif camera == STORAGE:
+            return  self.storage
+        elif camera == HALL_1:
+            return  self.hall_1
+        elif camera == VENT_ROOM:
+            return  self.vent_room
+        elif camera == VENT_CENTER:
+            return  self.vent_center
+        elif camera == VENT_EAST:
+            return  self.vent_east
 
 class Energy_bar():
     def __init__(self):
@@ -236,10 +242,13 @@ class Map():
 class Room():
     def __init__(self, image_path=""):
         self.ori_image = pygame.image.load(image_path)
+        self.animatronics = []
 
     def draw(self):
         self.image = pygame.transform.scale(self.ori_image, (screen_width, screen_height))
         screen.blit(self.image, (0, 0))
+        if self.animatronics:
+            self.animatronics[-1].draw((100, 100))
 
 class Hall(Room):
     def __init__(self):
@@ -309,8 +318,38 @@ class Vent_east(Room):
     '''
 
 class Animatronic():
-    def __init__(self):
-        self.map = []
+    SLEEP = 0
+    STAND = 1
+    CRAWL = 2
+    def __init__(self, office, images, route):
+        self.office = office
+        self.images = [pygame.image.load(image) for image in images]
+        self.status = Animatronic.SLEEP
+        self.route = cycle(route)
+        self.place = next(self.route)
+
+        camera = self.office.monitor.getcam(self.place)
+        camera.animatronics.append(self)
+        logging.debug(f"Animatronic {self.__class__.__name__} at place {self.place}")
+
+    def standup(self):
+        self.status = self.STAND
+
+    def crawl(self):
+        self.status = self.CRAWL
+
+    def draw(self, pos):
+        if self.status == self.SLEEP:
+            screen.blit(self.images[self.SLEEP], pos)
+        elif self.status == self.STAND:
+            screen.blit(self.images[self.STAND], pos)
+        elif self.status == self.CRAWL:
+            screen.blit(self.images[self.CRAWL], pos)
+
+class SpringBonnie(Animatronic):
+    def __init__(self, office):
+        super().__init__(office, ["../src/animatronic/spring_bonnie2.png", "../src/animatronic/spring_bonnie.png"], [FACTORY, HALL_1])
+
 
 class Fantom():
         pass
